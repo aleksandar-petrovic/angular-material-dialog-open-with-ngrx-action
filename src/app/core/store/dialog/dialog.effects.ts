@@ -1,18 +1,20 @@
 import {Injectable} from '@angular/core';
-import {Actions, ofType} from '@ngrx/effects';
+import {Actions, createEffect, ofType} from '@ngrx/effects';
 import * as fromActions from './dialog.actions';
-import {map} from 'rxjs/operators';
-import {MatDialog} from '@angular/material/dialog';
+import {map, switchMap} from 'rxjs/operators';
+import {MatDialog, MatDialogRef} from '@angular/material/dialog';
+import {of} from 'rxjs';
 
 @Injectable()
 export class DialogEffects {
 
   constructor(private actions$: Actions,
-              private dialog: MatDialog) {
+              private matDialog: MatDialog) {
   }
 
-  openDialog$ = this.actions$.pipe(
+  openDialog$ = createEffect(() => this.actions$.pipe(
     ofType(fromActions.OpenDialog),
-    map(() => fromActions.OpenDialogSuccess())
-  );
+    switchMap((action) => of(this.matDialog.open(action.component, action.config))),
+    map((dialogRef: MatDialogRef<any>) => fromActions.OpenDialogSuccess({dialogRef}))
+  ));
 }
